@@ -1,0 +1,158 @@
+import os
+import random
+import yt_dlp
+import requests
+import google.generativeai as genai
+
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+# CONFIG
+API_ID = 123456
+API_HASH = "api_hash"
+BOT_TOKEN = "bot_token"
+GEMINI_API = "your_gemini_key"
+OWNER_ID = 123456789
+
+genai.configure(api_key=GEMINI_API)
+model = genai.GenerativeModel("gemini-pro")
+
+app = Client("superbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+
+user_state = {}
+premium_users = set()
+
+# UI BUTTONS
+def main_menu():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🎥 Downloader", callback_data="down")],
+        [InlineKeyboardButton("🤖 AI Chat", callback_data="ai")],
+        [InlineKeyboardButton("🎨 Tools", callback_data="tools")],
+        [InlineKeyboardButton("🎮 Fun", callback_data="fun")],
+        [InlineKeyboardButton("⚙️ Utility", callback_data="util")],
+        [InlineKeyboardButton("💎 Premium", callback_data="premium")]
+    ])
+
+# START
+@app.on_message(filters.command("start"))
+async def start(client, message):
+    await message.reply_text(
+        "💀 Toxic Super Bot\n⚡ Fast | Smart | Premium\n\nSelect option:",
+        reply_markup=main_menu()
+    )
+
+# CALLBACK
+@app.on_callback_query()
+async def cb(client, q):
+    uid = q.from_user.id
+    data = q.data
+
+    if data == "down":
+        btn = InlineKeyboardMarkup([
+            [InlineKeyboardButton("⚡ YouTube", callback_data="yt"),
+             InlineKeyboardButton("⚡ Instagram", callback_data="ig")]
+        ])
+        await q.message.edit_text("⚡ Select Downloader:", reply_markup=btn)
+
+    elif data in ["yt", "ig", "ai", "style", "logo", "bio", "truth", "roast", "qr"]:
+        user_state[uid] = data
+        await q.message.edit_text(f"📩 Send input for {data}")
+
+    elif data == "ai":
+        user_state[uid] = "ai"
+        await q.message.edit_text("🤖 Send message")
+
+    elif data == "tools":
+        btn = InlineKeyboardMarkup([
+            [InlineKeyboardButton("✨ Style", callback_data="style"),
+             InlineKeyboardButton("🔥 Logo", callback_data="logo")],
+            [InlineKeyboardButton("💀 Bio", callback_data="bio")]
+        ])
+        await q.message.edit_text("🎨 Tools:", reply_markup=btn)
+
+    elif data == "fun":
+        btn = InlineKeyboardMarkup([
+            [InlineKeyboardButton("❓ Truth", callback_data="truth"),
+             InlineKeyboardButton("💀 Roast", callback_data="roast")]
+        ])
+        await q.message.edit_text("🎮 Fun:", reply_markup=btn)
+
+    elif data == "util":
+        btn = InlineKeyboardMarkup([
+            [InlineKeyboardButton("📷 QR Generator", callback_data="qr")]
+        ])
+        await q.message.edit_text("⚙️ Utility:", reply_markup=btn)
+
+    elif data == "premium":
+        text = "💎 Premium Features:\n⚡ Fast download\n🤖 Better AI\n🚀 No limits\n\nContact Owner"
+        await q.message.edit_text(text)
+
+# MESSAGE HANDLER
+@app.on_message(filters.text & ~filters.command("start"))
+async def handler(client, message):
+    uid = message.from_user.id
+    state = user_state.get(uid)
+    text = message.text
+
+    if not state:
+        return
+
+    # ⚡ FAST YOUTUBE
+    if state == "yt":
+        try:
+            await message.reply_text("⚡ Fast downloading...")
+            ydl_opts = {
+                'format': 'best[ext=mp4]',
+                'noplaylist': True,
+                'quiet': True
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(text, download=True)
+                file = ydl.prepare_filename(info)
+            await message.reply_video(file)
+            os.remove(file)
+        except:
+            await message.reply_text("❌ Download failed")
+
+    # ⚡ FAST INSTAGRAM
+    elif state == "ig":
+        try:
+            api = f"https://api.douyin.wtf/api?url={text}"
+            res = requests.get(api, timeout=10)
+            data = res.json()
+            video = data["data"]["play"]
+            await message.reply_video(video)
+        except:
+            await message.reply_text("❌ Invalid link")
+
+    # 🤖 GEMINI AI
+    elif state == "ai":
+        try:
+            res = model.generate_content(text)
+            await message.reply_text(res.text[:4000])
+        except:
+            await message.reply_text("❌ AI error")
+
+    # TOOLS
+    elif state == "style":
+        await message.reply_text(f"✨ {text} ✨")
+
+    elif state == "logo":
+        await message.reply_text(f"🔥 {text} Official")
+
+    elif state == "bio":
+        await message.reply_text("💀 King Mode | No Rules | Only Power")
+
+    # FUN
+    elif state == "truth":
+        await message.reply_text(random.choice(["Secret?", "Crush name?"]))
+
+    elif state == "roast":
+        await message.reply_text(random.choice(["Tu lag karta hua banda hai 💀"]))
+
+    # QR
+    elif state == "qr":
+        qr = f"https://api.qrserver.com/v1/create-qr-code/?data={text}"
+        await message.reply_photo(qr)
+
+app.run()
