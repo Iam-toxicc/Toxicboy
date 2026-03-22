@@ -11,7 +11,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 API_ID = 29074185
 API_HASH = "98ccddb18a6ee56582975571277610dc"
 BOT_TOKEN = "8653661384:AAF81gF8GFLKmdojVhMpQhg3ZjtQy3DJWg8"
-GEMINI_API = "your_gemini_key"
+GEMINI_API = "AIzaSyBGzKGaNnesMAyodSYw7LTnTKDCN2aNcFQ"
 OWNER_ID = 8238387029
 
 genai.configure(api_key=GEMINI_API)
