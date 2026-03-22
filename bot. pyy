@@ -8,11 +8,11 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # CONFIG
-API_ID = 123456
-API_HASH = "api_hash"
-BOT_TOKEN = "bot_token"
+API_ID = 29074185
+API_HASH = "98ccddb18a6ee56582975571277610dc"
+BOT_TOKEN = "8653661384:AAF81gF8GFLKmdojVhMpQhg3ZjtQy3DJWg8"
 GEMINI_API = "your_gemini_key"
-OWNER_ID = 123456789
+OWNER_ID = 8238387029
 
 genai.configure(api_key=GEMINI_API)
 model = genai.GenerativeModel("gemini-pro")
