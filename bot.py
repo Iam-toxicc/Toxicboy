@@ -10,7 +10,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 API_ID = 29074185
 API_HASH = "98ccddb18a6ee56582975571277610dc"
 BOT_TOKEN = "8653661384:AAF81gF8GFLKmdojVhMpQhg3ZjtQy3DJWg8"
-OPENAI_API = "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"
+OPENAI_API = "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"
 
 openai.api_key = OPENAI_API
 
